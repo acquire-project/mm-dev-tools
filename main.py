@@ -9,6 +9,7 @@ from pymmcore_plus import CMMCorePlus
 demo_mm_configuration = "MMConfig_demo.cfg"
 demo_acquire_single_configuration = "acquire-demo-single.cfg"
 demo_acquire_dual_configuration = "acquire-demo-dual.cfg"
+live_stream = False
 
 # file paths
 data_root = "C:\\acqData\\czi\\mdi-test1"
@@ -34,8 +35,6 @@ if __name__ == '__main__':
     # load configuration
     print(f"loading configuration {system_config}...")
     core.loadSystemConfiguration(system_config)
-
-    input("Press Enter to continue...")
 
     # exposure
     print(f"Default exposure: {core.getExposure()} ms")
@@ -68,12 +67,19 @@ if __name__ == '__main__':
     interval_s = 1.0
 
     print("acquiring...")
+    input("Press Enter to continue...")
+
     core.setProperty(acquire, "SaveToZarr", "1")
 
-    for i in range(num_frames):
-        core.snapImage()
-        img = core.getImage()
-        print(f"\timage {i + 1}: {image_info(img)}")
-        time.sleep(interval_s)
+    if live_stream:
+        print("Running live sequence...")
+        core.startSequenceAcquisition(num_frames, 0, False)
+    else:
+        for i in range(num_frames):
+            core.snapImage()
+            img = core.getImage()
+            print(f"\timage {i + 1}: {image_info(img)}")
+            time.sleep(interval_s)
 
+    core.setProperty(acquire, "SaveToZarr", "0")
     print(f"Done. Data saved in {data_root}\\{data_prefix}")
